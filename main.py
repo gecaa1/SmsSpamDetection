@@ -630,3 +630,55 @@ plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.tight_layout()
 plt.savefig("results/plots/vectorizer_comparison.png", dpi=300, bbox_inches="tight")
 plt.show()
+
+def predict_sms(text):
+
+    cleaned = clean_text(text)
+
+    text_tfidf = tfidf.transform([cleaned])
+
+    text_extra = extract_features(text).to_frame().T
+
+    text_extra_scaled = scaler.transform(text_extra)
+
+    final_features = hstack([text_tfidf, csr_matrix(text_extra_scaled)])
+
+    prediction = best_model.predict(final_features)[0]
+
+    return "SPAM" if prediction == 1 else "HAM"
+
+custom_messages_path = "data/custom_messages.txt"
+
+with open(custom_messages_path, "r", encoding="utf-8") as file:
+
+    examples = [
+
+        line.strip()
+
+        for line in file.readlines()
+
+        if line.strip()
+
+    ]
+
+prediction_results = []
+
+for sms in examples:
+
+    prediction = predict_sms(sms)
+
+    prediction_results.append({
+
+        "message": sms,
+
+        "prediction": prediction
+
+    })
+
+    print(sms, "->", prediction)
+
+prediction_df = pd.DataFrame(prediction_results)
+
+prediction_df.to_csv("results/tables/sample_predictions.csv", index=False)
+
+display(prediction_df)
