@@ -1,0 +1,14 @@
+.venv/
+venv/
+*.pyc
+*.pyo
+__pycache__/
+
+results/models/*.pkl
+results/plots/*.png
+results/tables/*.csv
+results/reports/*.txt
+
+.DS_Store
+.idea/
+.env
