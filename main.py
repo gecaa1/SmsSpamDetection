@@ -433,3 +433,50 @@ voting = evaluate_model(
     y_train,
     y_test
 )
+roc_models = {
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "Random Forest": RandomForestClassifier(n_estimators=200, random_state=42),
+    "Gradient Boosting": GradientBoostingClassifier(random_state=42),
+    "Voting Classifier": voting
+}
+
+roc_results = []
+
+plt.figure(figsize=(8.5, 6.2))
+
+for name, model in roc_models.items():
+    model.fit(X_train_final, y_train)
+
+    if hasattr(model, "predict_proba"):
+        y_score = model.predict_proba(X_test_final)[:, 1]
+    else:
+        continue
+
+    fpr, tpr, _ = roc_curve(y_test, y_score)
+    roc_auc = auc(fpr, tpr)
+
+    roc_results.append({
+        "model": name,
+        "auc": roc_auc
+    })
+
+    plt.plot(
+        fpr,
+        tpr,
+        linewidth=2.4,
+        label=f"{name} | AUC = {roc_auc:.3f}"
+    )
+
+plt.plot([0, 1], [0, 1], linestyle="--", linewidth=1.5, label="Losowy klasyfikator")
+plt.title("Krzywa ROC dla wybranych modeli", fontsize=17, fontweight="bold", pad=15)
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.grid(linestyle="--", alpha=0.35)
+plt.legend(loc="lower right", frameon=True)
+plt.tight_layout()
+plt.savefig("results/plots/roc_curve.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+roc_results_df = pd.DataFrame(roc_results)
+roc_results_df.to_csv("results/tables/roc_auc_results.csv", index=False)
+
