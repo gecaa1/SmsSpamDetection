@@ -480,3 +480,65 @@ plt.show()
 roc_results_df = pd.DataFrame(roc_results)
 roc_results_df.to_csv("results/tables/roc_auc_results.csv", index=False)
 
+lr = LogisticRegression(max_iter=1000)
+lr.fit(X_train_tfidf, y_train)
+
+feature_names = np.array(tfidf.get_feature_names_out())
+coefficients = lr.coef_[0]
+
+top_spam_idx = coefficients.argsort()[-20:]
+top_ham_idx = coefficients.argsort()[:20]
+
+top_spam_words = pd.DataFrame({
+    "word": feature_names[top_spam_idx],
+    "coefficient": coefficients[top_spam_idx]
+}).sort_values(by="coefficient", ascending=False)
+
+top_ham_words = pd.DataFrame({
+    "word": feature_names[top_ham_idx],
+    "coefficient": coefficients[top_ham_idx]
+}).sort_values(by="coefficient")
+
+print("Najważniejsze słowa dla SPAM:")
+display(top_spam_words)
+
+print("Najważniejsze słowa dla HAM:")
+display(top_ham_words)
+
+top_spam_words.to_csv("results/tables/top_spam_words.csv", index=False)
+top_ham_words.to_csv("results/tables/top_ham_words.csv", index=False)
+
+plot_words = top_spam_words.sort_values(by="coefficient", ascending=True)
+
+plt.figure(figsize=(9.5, 7.2))
+plt.hlines(
+    y=plot_words["word"],
+    xmin=0,
+    xmax=plot_words["coefficient"],
+    linewidth=3
+)
+plt.scatter(
+    plot_words["coefficient"],
+    plot_words["word"],
+    s=110,
+    zorder=3
+)
+
+for coef, word in zip(plot_words["coefficient"], plot_words["word"]):
+    plt.text(
+        coef + 0.08,
+        word,
+        f"{coef:.2f}",
+        va="center",
+        fontsize=10,
+        fontweight="bold"
+    )
+
+plt.title("Najsilniejsze cechy wskazujące na SPAM", fontsize=17, fontweight="bold", pad=15)
+plt.xlabel("Waga cechy w modelu Logistic Regression")
+plt.ylabel("")
+plt.grid(axis="x", linestyle="--", alpha=0.35)
+plt.xlim(0, plot_words["coefficient"].max() * 1.18)
+plt.tight_layout()
+plt.savefig("results/plots/top_spam_words.png", dpi=300, bbox_inches="tight")
+plt.show()
