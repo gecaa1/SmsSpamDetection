@@ -3,10 +3,11 @@ Opis projektu
 Problem:
 Spam SMS stanowi istotny problem związany z bezpieczeństwem użytkowników telefonów komórkowych. Wiadomości spamowe często zawierają treści reklamowe, próby phishingu lub wyłudzania danych.
 Ze względu na dużą liczbę wiadomości konieczne jest zastosowanie automatycznych metod klasyfikacji tekstu umożliwiających wykrywanie spamu.
-
-Wykorzystany artykuł naukowy:
+* Tytuł artykułu:
+SMS Spam Detection using Relevance Vector Machine
+* Wykorzystany artykuł naukowy:
 https://www.sciencedirect.com/science/article/pii/S187705092302094X/pdf?md5=5008992964aa82c948924107bd3a5869&pid=1-s2.0-S187705092302094X-main.pdf
-Link do dataset:
+* Link do dataset:
 https://archive.ics.uci.edu/ml/datasets/SMS+Spam+Collection
 
 Dotychczasowe rozwiązania:
