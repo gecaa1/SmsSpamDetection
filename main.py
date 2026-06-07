@@ -186,3 +186,25 @@ X_train_text, X_test_text, X_train_extra, X_test_extra, y_train, y_test = train_
     random_state=42,
     stratify=y
 )
+
+tfidf = TfidfVectorizer(
+    max_features=5000,
+    ngram_range=(1, 2),
+    stop_words="english"
+)
+
+X_train_tfidf = tfidf.fit_transform(X_train_text)
+X_test_tfidf = tfidf.transform(X_test_text)
+
+scaler = StandardScaler()
+X_train_extra_scaled = scaler.fit_transform(X_train_extra)
+X_test_extra_scaled = scaler.transform(X_test_extra)
+
+X_train_final = hstack([X_train_tfidf, csr_matrix(X_train_extra_scaled)])
+X_test_final = hstack([X_test_tfidf, csr_matrix(X_test_extra_scaled)])
+
+print(X_train_final.shape)
+print(X_test_final.shape)
+
+joblib.dump(tfidf, "results/models/tfidf_vectorizer.pkl")
+joblib.dump(scaler, "results/models/scaler.pkl")
