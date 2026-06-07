@@ -3,7 +3,15 @@ venv/
 *.pyc
 *.pyo
 __pycache__/
+ENV/
+.env/
 
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
 results/models/*.pkl
 results/plots/*.png
 results/tables/*.csv
@@ -11,4 +19,8 @@ results/reports/*.txt
 
 .DS_Store
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
 .env
