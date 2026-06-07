@@ -682,3 +682,7 @@ prediction_df = pd.DataFrame(prediction_results)
 prediction_df.to_csv("results/tables/sample_predictions.csv", index=False)
 
 display(prediction_df)
+
+joblib.dump(best_model, "results/models/best_model_tuned_linear_svm.pkl")
+
+print("ukonczono")
