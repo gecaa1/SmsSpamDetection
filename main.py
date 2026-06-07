@@ -173,3 +173,16 @@ extra_features = df["message"].apply(extract_features)
 display(extra_features.head())
 
 extra_features.to_csv("results/tables/extra_features.csv", index=False)
+
+X_text = df["clean_message"]
+X_extra = extra_features
+y = df["label_num"]
+
+X_train_text, X_test_text, X_train_extra, X_test_extra, y_train, y_test = train_test_split(
+    X_text,
+    X_extra,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
