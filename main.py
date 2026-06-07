@@ -415,3 +415,21 @@ best_svm = evaluate_model(
     y_train,
     y_test
 )
+
+voting = VotingClassifier(
+    estimators=[
+        ("lr", LogisticRegression(max_iter=1000)),
+        ("svc", SVC(probability=True, kernel="linear", C=1)),
+        ("rf", RandomForestClassifier(n_estimators=200, random_state=42))
+    ],
+    voting="soft"
+)
+
+voting = evaluate_model(
+    "Voting Classifier",
+    voting,
+    X_train_final,
+    X_test_final,
+    y_train,
+    y_test
+)
