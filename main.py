@@ -69,3 +69,107 @@ print(df["label"].value_counts())
 print(df["label"].value_counts(normalize=True))
 
 display(df.head())
+
+df["message_length"] = df["message"].apply(len)
+class_counts = df["label"].value_counts().sort_values(ascending=True)
+
+plt.figure(figsize=(7.5, 4.8))
+plt.hlines(
+    y=class_counts.index,
+    xmin=0,
+    xmax=class_counts.values,
+    linewidth=3
+)
+plt.scatter(
+    class_counts.values,
+    class_counts.index,
+    s=160,
+    zorder=3
+)
+
+for label, value in class_counts.items():
+    percentage = value / class_counts.sum() * 100
+    plt.text(
+        value + 60,
+        label,
+        f"{value} ({percentage:.1f}%)",
+        va="center",
+        fontsize=11,
+        fontweight="bold"
+    )
+
+plt.title("Rozkład klas w zbiorze SMS", fontsize=17, fontweight="bold", pad=14)
+plt.xlabel("Liczba wiadomości")
+plt.ylabel("")
+plt.grid(axis="x", linestyle="--", alpha=0.35)
+plt.xlim(0, class_counts.max() * 1.18)
+plt.tight_layout()
+plt.savefig("results/plots/class_distribution.png", dpi=300, bbox_inches="tight")
+plt.show()
+length_by_class = df.groupby("label")["message_length"].mean().sort_values(ascending=True)
+
+plt.figure(figsize=(7.5, 4.8))
+plt.hlines(
+    y=length_by_class.index,
+    xmin=0,
+    xmax=length_by_class.values,
+    linewidth=3
+)
+plt.scatter(
+    length_by_class.values,
+    length_by_class.index,
+    s=160,
+    zorder=3
+)
+
+for label, value in length_by_class.items():
+    plt.text(
+        value + 2,
+        label,
+        f"{value:.1f} znaków",
+        va="center",
+        fontsize=11,
+        fontweight="bold"
+    )
+
+plt.title("Średnia długość wiadomości według klasy", fontsize=17, fontweight="bold", pad=14)
+plt.xlabel("Średnia liczba znaków")
+plt.ylabel("")
+plt.grid(axis="x", linestyle="--", alpha=0.35)
+plt.xlim(0, length_by_class.max() * 1.2)
+plt.tight_layout()
+plt.savefig("results/plots/message_length.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+df.describe(include="all").to_csv("results/tables/dataset_description.csv")
+
+def clean_text(text):
+    text = str(text).lower()
+    text = re.sub(r"http\S+|www\S+", " URL ", text)
+    text = re.sub(r"\d+", " NUMBER ", text)
+    text = text.translate(str.maketrans("", "", string.punctuation))
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+df["clean_message"] = df["message"].apply(clean_text)
+
+display(df[["message", "clean_message"]].head())
+def extract_features(text):
+    text = str(text)
+
+    return pd.Series({
+        "length": len(text),
+        "num_digits": sum(c.isdigit() for c in text),
+        "num_exclamation": text.count("!"),
+        "num_uppercase": sum(c.isupper() for c in text),
+        "has_url": int(bool(re.search(r"http\S+|www\S+", text))),
+        "num_words": len(text.split())
+    })
+
+
+extra_features = df["message"].apply(extract_features)
+
+display(extra_features.head())
+
+extra_features.to_csv("results/tables/extra_features.csv", index=False)
