@@ -208,3 +208,106 @@ print(X_test_final.shape)
 
 joblib.dump(tfidf, "results/models/tfidf_vectorizer.pkl")
 joblib.dump(scaler, "results/models/scaler.pkl")
+
+results = []
+
+def safe_filename(name):
+    return name.lower().replace(" ", "_").replace("/", "_")
+
+
+def evaluate_model(name, model, X_train, X_test, y_train, y_test):
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    result = {
+        "model": name,
+        "accuracy": accuracy_score(y_test, y_pred),
+        "precision": precision_score(y_test, y_pred),
+        "recall": recall_score(y_test, y_pred),
+        "f1": f1_score(y_test, y_pred)
+    }
+
+    results.append(result)
+
+    report = classification_report(y_test, y_pred, target_names=["ham", "spam"])
+
+    print("=" * 60)
+    print(name)
+    print("=" * 60)
+    print(report)
+
+    filename = safe_filename(name)
+
+    with open(f"results/reports/classification_report_{filename}.txt", "w", encoding="utf-8") as file:
+        file.write(report)
+
+    cm = confusion_matrix(y_test, y_pred)
+
+    cm_df = pd.DataFrame(
+        cm,
+        index=["actual_ham", "actual_spam"],
+        columns=["predicted_ham", "predicted_spam"]
+    )
+
+    cm_df.to_csv(f"results/tables/confusion_matrix_{filename}.csv")
+
+    cm_percent = cm / cm.sum() * 100
+
+    fig, ax = plt.subplots(figsize=(7.5, 6.5))
+
+    im = ax.imshow(cm, cmap="Blues", aspect="auto")
+
+    ax.set_title(
+        f"Macierz pomyłek — {name}",
+        fontsize=16,
+        fontweight="bold",
+        pad=15
+    )
+
+    ax.set_xlabel("Klasa przewidziana", fontsize=12)
+    ax.set_ylabel("Klasa rzeczywista", fontsize=12)
+
+    ax.set_xticks([0, 1])
+    ax.set_yticks([0, 1])
+    ax.set_xticklabels(["ham", "spam"], fontsize=12)
+    ax.set_yticklabels(["ham", "spam"], fontsize=12)
+
+    for i in range(2):
+        for j in range(2):
+            text = (
+                f"{cm[i, j]} przypadków\n"
+                f"{cm_percent[i, j]:.1f}% zbioru testowego"
+            )
+
+            ax.text(
+                j,
+                i,
+                text,
+                ha="center",
+                va="center",
+                fontsize=11,
+                fontweight="bold",
+                color="white" if cm[i, j] > cm.max() / 2 else "black"
+            )
+
+    ax.set_xticks(np.arange(-0.5, 2, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, 2, 1), minor=True)
+    ax.grid(which="minor", color="white", linestyle="-", linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    cbar = plt.colorbar(im, ax=ax)
+    cbar.set_label("Liczba przypadków", fontsize=11)
+
+    plt.tight_layout()
+
+    plt.savefig(
+        f"results/plots/confusion_matrix_{filename}.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.show()
+
+    joblib.dump(model, f"results/models/model_{filename}.pkl")
+
+    return model
