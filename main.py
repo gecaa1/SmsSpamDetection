@@ -542,3 +542,24 @@ plt.xlim(0, plot_words["coefficient"].max() * 1.18)
 plt.tight_layout()
 plt.savefig("results/plots/top_spam_words.png", dpi=300, bbox_inches="tight")
 plt.show()
+
+best_model = grid_svm.best_estimator_
+best_model.fit(X_train_final, y_train)
+
+y_pred = best_model.predict(X_test_final)
+
+errors = pd.DataFrame({
+    "message": X_test_text.values,
+    "true_label": y_test.values,
+    "predicted_label": y_pred
+})
+
+errors = errors[errors["true_label"] != errors["predicted_label"]]
+
+errors["true_label"] = errors["true_label"].map({0: "ham", 1: "spam"})
+errors["predicted_label"] = errors["predicted_label"].map({0: "ham", 1: "spam"})
+
+display(errors.head(20))
+
+errors.to_csv("results/tables/model_errors.csv", index=False)
+
