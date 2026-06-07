@@ -36,15 +36,15 @@ Wymagania:
 * venv
 
 Instalacja i uruchomienie
-Utworzenie środowiska:
+* Utworzenie środowiska:
 python -m venv .venv
-Aktywacja środowiska:
+* Aktywacja środowiska:
 source .venv/bin/activate
-Instalacja zależności:
+* Instalacja zależności:
 pip install -r requirements.txt
-Uruchomienie projektu:
+* Uruchomienie projektu:
 python main.py
-Struktura projektu
-data/       -> zbiór danych
-main.py    -> kod źródłowy
-results/    -> wygenerowane wykresy, raporty i modele
+  * Struktura projektu
+     * data/       -> zbiór danych
+       * main.py    -> kod źródłowy
+         * results/    -> wygenerowane wykresy, raporty i modele
