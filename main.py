@@ -382,3 +382,36 @@ plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.tight_layout()
 plt.savefig("results/plots/model_comparison_f1.png", dpi=300, bbox_inches="tight")
 plt.show()
+
+svm_params = {
+    "C": [0.1, 1, 5, 10]
+}
+
+grid_svm = GridSearchCV(
+    LinearSVC(),
+    svm_params,
+    scoring="f1",
+    cv=5,
+    n_jobs=-1
+)
+
+grid_svm.fit(X_train_final, y_train)
+
+print("Najlepsze parametry:", grid_svm.best_params_)
+print("Najlepszy wynik CV:", grid_svm.best_score_)
+
+grid_results_df = pd.DataFrame(grid_svm.cv_results_)
+grid_results_df.to_csv("results/tables/grid_search_svm_results.csv", index=False)
+
+with open("results/reports/grid_search_svm_best_params.txt", "w", encoding="utf-8") as file:
+    file.write(f"Najlepsze parametry: {grid_svm.best_params_}\n")
+    file.write(f"Najlepszy wynik CV: {grid_svm.best_score_}\n")
+
+best_svm = evaluate_model(
+    "Tuned Linear SVM",
+    grid_svm.best_estimator_,
+    X_train_final,
+    X_test_final,
+    y_train,
+    y_test
+)
