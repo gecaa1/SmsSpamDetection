@@ -311,3 +311,33 @@ def evaluate_model(name, model, X_train, X_test, y_train, y_test):
     joblib.dump(model, f"results/models/model_{filename}.pkl")
 
     return model
+models = {
+    "Multinomial Naive Bayes": MultinomialNB(),
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "Linear SVM": LinearSVC(),
+    "Random Forest": RandomForestClassifier(n_estimators=200, random_state=42),
+    "Gradient Boosting": GradientBoostingClassifier(random_state=42)
+}
+
+trained_models = {}
+
+for name, model in models.items():
+
+    if name == "Multinomial Naive Bayes":
+        trained_models[name] = evaluate_model(
+            name,
+            model,
+            X_train_tfidf,
+            X_test_tfidf,
+            y_train,
+            y_test
+        )
+    else:
+        trained_models[name] = evaluate_model(
+            name,
+            model,
+            X_train_final,
+            X_test_final,
+            y_train,
+            y_test
+        )
