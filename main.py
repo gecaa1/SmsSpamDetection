@@ -341,3 +341,44 @@ for name, model in models.items():
             y_train,
             y_test
         )
+results_df = pd.DataFrame(results)
+results_df = results_df.sort_values(by="f1", ascending=False)
+
+display(results_df)
+
+results_df.to_csv("results/tables/model_results.csv", index=False)
+
+plot_df = results_df.sort_values(by="f1", ascending=True)
+
+plt.figure(figsize=(10, 6))
+plt.hlines(
+    y=plot_df["model"],
+    xmin=0,
+    xmax=plot_df["f1"],
+    linewidth=3
+)
+plt.scatter(
+    plot_df["f1"],
+    plot_df["model"],
+    s=140,
+    zorder=3
+)
+
+for f1, model_name in zip(plot_df["f1"], plot_df["model"]):
+    plt.text(
+        f1 + 0.01,
+        model_name,
+        f"{f1:.3f}",
+        va="center",
+        fontsize=11,
+        fontweight="bold"
+    )
+
+plt.title("Porównanie modeli według F1-score", fontsize=17, fontweight="bold", pad=15)
+plt.xlabel("F1-score")
+plt.ylabel("")
+plt.xlim(0, 1.05)
+plt.grid(axis="x", linestyle="--", alpha=0.35)
+plt.tight_layout()
+plt.savefig("results/plots/model_comparison_f1.png", dpi=300, bbox_inches="tight")
+plt.show()
