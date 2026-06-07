@@ -25,6 +25,7 @@ Wyniki modeli:
 * Linear SVM -----------------------0.95
 * Random Forest ----------------------- 0.94
 * Logistic Regression ----------------------- 0.93
+* Custom Multinomial Naive Bayes -----------0.93
 * Naive Bayes ----------------------- 0.91
 
 Najwyższą skuteczność osiągnął model Linear SVM wykorzystujący reprezentację TF-IDF oraz dodatkowe cechy tekstowe

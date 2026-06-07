@@ -40,14 +40,15 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC, SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+from custom_naive_bayes import CustomMultinomialNB
 
-os.makedirs("results", exist_ok=True)
-os.makedirs("results/plots", exist_ok=True)
-os.makedirs("results/tables", exist_ok=True)
-os.makedirs("results/models", exist_ok=True)
-os.makedirs("results/reports", exist_ok=True)
+os.makedirs("../results", exist_ok=True)
+os.makedirs("../results/plots", exist_ok=True)
+os.makedirs("../results/tables", exist_ok=True)
+os.makedirs("../results/models", exist_ok=True)
+os.makedirs("../results/reports", exist_ok=True)
 
-file_path = "data/SMSSpamCollection"
+file_path = "../data/SMSSpamCollection"
 
 df = pd.read_csv(
     file_path,
@@ -206,8 +207,8 @@ X_test_final = hstack([X_test_tfidf, csr_matrix(X_test_extra_scaled)])
 print(X_train_final.shape)
 print(X_test_final.shape)
 
-joblib.dump(tfidf, "results/models/tfidf_vectorizer.pkl")
-joblib.dump(scaler, "results/models/scaler.pkl")
+joblib.dump(tfidf, "../results/models/tfidf_vectorizer.pkl")
+joblib.dump(scaler, "../results/models/scaler.pkl")
 
 results = []
 
@@ -347,6 +348,40 @@ results_df = results_df.sort_values(by="f1", ascending=False)
 display(results_df)
 
 results_df.to_csv("results/tables/model_results.csv", index=False)
+# =========================
+# CUSTOM MULTINOMIAL NAIVE BAYES
+# =========================
+
+custom_nb = CustomMultinomialNB()
+
+custom_nb.fit(
+    X_train_text.tolist(),
+    y_train.tolist()
+)
+
+custom_predictions = custom_nb.predict(
+    X_test_text.tolist()
+)
+
+custom_result = {
+    "model": "Custom Multinomial NB",
+    "accuracy": accuracy_score(y_test, custom_predictions),
+    "precision": precision_score(y_test, custom_predictions),
+    "recall": recall_score(y_test, custom_predictions),
+    "f1": f1_score(y_test, custom_predictions)
+}
+
+results.append(custom_result)
+
+print("=" * 60)
+print("Custom Multinomial Naive Bayes")
+print("=" * 60)
+
+print(classification_report(
+    y_test,
+    custom_predictions,
+    target_names=["ham", "spam"]
+))
 
 plot_df = results_df.sort_values(by="f1", ascending=True)
 
@@ -403,7 +438,7 @@ print("Najlepszy wynik CV:", grid_svm.best_score_)
 grid_results_df = pd.DataFrame(grid_svm.cv_results_)
 grid_results_df.to_csv("results/tables/grid_search_svm_results.csv", index=False)
 
-with open("results/reports/grid_search_svm_best_params.txt", "w", encoding="utf-8") as file:
+with open("../results/reports/grid_search_svm_best_params.txt", "w", encoding="utf-8") as file:
     file.write(f"Najlepsze parametry: {grid_svm.best_params_}\n")
     file.write(f"Najlepszy wynik CV: {grid_svm.best_score_}\n")
 
@@ -647,7 +682,7 @@ def predict_sms(text):
 
     return "SPAM" if prediction == 1 else "HAM"
 
-custom_messages_path = "data/custom_messages.txt"
+custom_messages_path = "../data/custom_messages.txt"
 
 with open(custom_messages_path, "r", encoding="utf-8") as file:
 
@@ -683,6 +718,6 @@ prediction_df.to_csv("results/tables/sample_predictions.csv", index=False)
 
 display(prediction_df)
 
-joblib.dump(best_model, "results/models/best_model_tuned_linear_svm.pkl")
+joblib.dump(best_model, "../results/models/best_model_tuned_linear_svm.pkl")
 
 print("ukonczono")

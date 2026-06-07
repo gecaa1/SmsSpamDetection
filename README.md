@@ -46,5 +46,5 @@ pip install -r requirements.txt
 python main.py
   * Struktura projektu
      * data/       -> zbiór danych
-       * main.py    -> kod źródłowy
+       * src/main.py    -> kod źródłowy
          * results/    -> wygenerowane wykresy, raporty i modele

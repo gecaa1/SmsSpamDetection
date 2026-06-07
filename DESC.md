@@ -30,6 +30,7 @@ W projekcie wykorzystano:
 
 Porównano skuteczność następujących modeli:
 * Multinomial Naive Bayes,
+* Custom Multinomial Naive Bayes,
 * Logistic Regression,
 * Linear SVM,
 * Random Forest,
