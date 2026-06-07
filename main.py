@@ -563,3 +563,70 @@ display(errors.head(20))
 
 errors.to_csv("results/tables/model_errors.csv", index=False)
 
+count_vectorizer = CountVectorizer(
+    max_features=5000,
+    ngram_range=(1, 2),
+    stop_words="english"
+)
+
+X_train_count = count_vectorizer.fit_transform(X_train_text)
+X_test_count = count_vectorizer.transform(X_test_text)
+
+comparison_results = []
+
+for vectorizer_name, Xtr, Xte in [
+    ("CountVectorizer", X_train_count, X_test_count),
+    ("TF-IDF", X_train_tfidf, X_test_tfidf)
+]:
+    model = LinearSVC(C=1)
+    model.fit(Xtr, y_train)
+    pred = model.predict(Xte)
+
+    comparison_results.append({
+        "representation": vectorizer_name,
+        "accuracy": accuracy_score(y_test, pred),
+        "precision": precision_score(y_test, pred),
+        "recall": recall_score(y_test, pred),
+        "f1": f1_score(y_test, pred)
+    })
+
+comparison_df = pd.DataFrame(comparison_results)
+
+display(comparison_df)
+
+comparison_df.to_csv("results/tables/vectorizer_comparison.csv", index=False)
+
+plot_df = comparison_df.sort_values(by="f1", ascending=True)
+
+plt.figure(figsize=(8.5, 4.8))
+plt.hlines(
+    y=plot_df["representation"],
+    xmin=0,
+    xmax=plot_df["f1"],
+    linewidth=3
+)
+plt.scatter(
+    plot_df["f1"],
+    plot_df["representation"],
+    s=160,
+    zorder=3
+)
+
+for f1, representation in zip(plot_df["f1"], plot_df["representation"]):
+    plt.text(
+        f1 + 0.01,
+        representation,
+        f"{f1:.3f}",
+        va="center",
+        fontsize=11,
+        fontweight="bold"
+    )
+
+plt.title("Porównanie reprezentacji tekstu", fontsize=17, fontweight="bold", pad=15)
+plt.xlabel("F1-score")
+plt.ylabel("")
+plt.xlim(0, 1.05)
+plt.grid(axis="x", linestyle="--", alpha=0.35)
+plt.tight_layout()
+plt.savefig("results/plots/vectorizer_comparison.png", dpi=300, bbox_inches="tight")
+plt.show()
