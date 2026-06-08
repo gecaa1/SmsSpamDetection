@@ -42,13 +42,22 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
 from custom_naive_bayes import CustomMultinomialNB
 
-os.makedirs("../results", exist_ok=True)
-os.makedirs("../results/plots", exist_ok=True)
-os.makedirs("../results/tables", exist_ok=True)
-os.makedirs("../results/models", exist_ok=True)
-os.makedirs("../results/reports", exist_ok=True)
 
-file_path = "../data/SMSSpamCollection"
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+results_dir = os.path.join(BASE_DIR, "results")
+plots_dir = os.path.join(results_dir, "plots")
+tables_dir = os.path.join(results_dir, "tables")
+models_dir = os.path.join(results_dir, "models")
+reports_dir = os.path.join(results_dir, "reports")
+
+os.makedirs(plots_dir, exist_ok=True)
+os.makedirs(tables_dir, exist_ok=True)
+os.makedirs(models_dir, exist_ok=True)
+os.makedirs(reports_dir, exist_ok=True)
+
+file_path = os.path.join(BASE_DIR, "data", "SMSSpamCollection")
 
 df = pd.read_csv(
     file_path,
@@ -105,7 +114,7 @@ plt.ylabel("")
 plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.xlim(0, class_counts.max() * 1.18)
 plt.tight_layout()
-plt.savefig("results/plots/class_distribution.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "class_distribution.png"), dpi=300, bbox_inches="tight")
 plt.show()
 length_by_class = df.groupby("label")["message_length"].mean().sort_values(ascending=True)
 
@@ -139,10 +148,10 @@ plt.ylabel("")
 plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.xlim(0, length_by_class.max() * 1.2)
 plt.tight_layout()
-plt.savefig("results/plots/message_length.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "message_length.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
-df.describe(include="all").to_csv("results/tables/dataset_description.csv")
+df.describe(include="all").to_csv(os.path.join(tables_dir, "dataset_description.csv"))
 
 def clean_text(text):
     text = str(text).lower()
@@ -173,7 +182,7 @@ extra_features = df["message"].apply(extract_features)
 
 display(extra_features.head())
 
-extra_features.to_csv("results/tables/extra_features.csv", index=False)
+extra_features.to_csv(os.path.join(tables_dir, "extra_features.csv"), index=False)
 
 X_text = df["clean_message"]
 X_extra = extra_features
@@ -207,8 +216,8 @@ X_test_final = hstack([X_test_tfidf, csr_matrix(X_test_extra_scaled)])
 print(X_train_final.shape)
 print(X_test_final.shape)
 
-joblib.dump(tfidf, "../results/models/tfidf_vectorizer.pkl")
-joblib.dump(scaler, "../results/models/scaler.pkl")
+joblib.dump(tfidf, os.path.join(models_dir, "tfidf_vectorizer.pkl"))
+joblib.dump(scaler, os.path.join(models_dir, "scaler.pkl"))
 
 results = []
 
@@ -239,7 +248,7 @@ def evaluate_model(name, model, X_train, X_test, y_train, y_test):
 
     filename = safe_filename(name)
 
-    with open(f"results/reports/classification_report_{filename}.txt", "w", encoding="utf-8") as file:
+    with open(os.path.join(reports_dir, f"classification_report_{filename}.txt"), "w", encoding="utf-8") as file:
         file.write(report)
 
     cm = confusion_matrix(y_test, y_pred)
@@ -250,7 +259,7 @@ def evaluate_model(name, model, X_train, X_test, y_train, y_test):
         columns=["predicted_ham", "predicted_spam"]
     )
 
-    cm_df.to_csv(f"results/tables/confusion_matrix_{filename}.csv")
+    cm_df.to_csv(os.path.join(tables_dir, f"confusion_matrix_{filename}.csv"))
 
     cm_percent = cm / cm.sum() * 100
 
@@ -302,14 +311,14 @@ def evaluate_model(name, model, X_train, X_test, y_train, y_test):
     plt.tight_layout()
 
     plt.savefig(
-        f"results/plots/confusion_matrix_{filename}.png",
+        os.path.join(plots_dir, f"confusion_matrix_{filename}.png"),
         dpi=300,
         bbox_inches="tight"
     )
 
     plt.show()
 
-    joblib.dump(model, f"results/models/model_{filename}.pkl")
+    joblib.dump(model, os.path.join(models_dir, f"model_{filename}.pkl"))
 
     return model
 models = {
@@ -347,7 +356,7 @@ results_df = results_df.sort_values(by="f1", ascending=False)
 
 display(results_df)
 
-results_df.to_csv("results/tables/model_results.csv", index=False)
+results_df.to_csv(os.path.join(tables_dir, "model_results.csv"), index=False)
 # =========================
 # CUSTOM MULTINOMIAL NAIVE BAYES
 # =========================
@@ -415,7 +424,7 @@ plt.ylabel("")
 plt.xlim(0, 1.05)
 plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.tight_layout()
-plt.savefig("results/plots/model_comparison_f1.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "model_comparison_f1.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
 svm_params = {
@@ -436,9 +445,9 @@ print("Najlepsze parametry:", grid_svm.best_params_)
 print("Najlepszy wynik CV:", grid_svm.best_score_)
 
 grid_results_df = pd.DataFrame(grid_svm.cv_results_)
-grid_results_df.to_csv("results/tables/grid_search_svm_results.csv", index=False)
+grid_results_df.to_csv(os.path.join(tables_dir, "grid_search_svm_results.csv"), index=False)
 
-with open("../results/reports/grid_search_svm_best_params.txt", "w", encoding="utf-8") as file:
+with open(os.path.join(reports_dir, "grid_search_svm_best_params.txt"), "w", encoding="utf-8") as file:
     file.write(f"Najlepsze parametry: {grid_svm.best_params_}\n")
     file.write(f"Najlepszy wynik CV: {grid_svm.best_score_}\n")
 
@@ -509,11 +518,11 @@ plt.ylabel("True Positive Rate")
 plt.grid(linestyle="--", alpha=0.35)
 plt.legend(loc="lower right", frameon=True)
 plt.tight_layout()
-plt.savefig("results/plots/roc_curve.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "roc_curve.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
 roc_results_df = pd.DataFrame(roc_results)
-roc_results_df.to_csv("results/tables/roc_auc_results.csv", index=False)
+roc_results_df.to_csv(os.path.join(tables_dir, "roc_auc_results.csv"), index=False)
 
 lr = LogisticRegression(max_iter=1000)
 lr.fit(X_train_tfidf, y_train)
@@ -540,8 +549,8 @@ display(top_spam_words)
 print("Najważniejsze słowa dla HAM:")
 display(top_ham_words)
 
-top_spam_words.to_csv("results/tables/top_spam_words.csv", index=False)
-top_ham_words.to_csv("results/tables/top_ham_words.csv", index=False)
+top_spam_words.to_csv(os.path.join(tables_dir, "top_spam_words.csv"), index=False)
+top_ham_words.to_csv(os.path.join(tables_dir, "top_ham_words.csv"), index=False)
 
 plot_words = top_spam_words.sort_values(by="coefficient", ascending=True)
 
@@ -575,7 +584,7 @@ plt.ylabel("")
 plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.xlim(0, plot_words["coefficient"].max() * 1.18)
 plt.tight_layout()
-plt.savefig("results/plots/top_spam_words.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "top_spam_words.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
 best_model = grid_svm.best_estimator_
@@ -596,7 +605,7 @@ errors["predicted_label"] = errors["predicted_label"].map({0: "ham", 1: "spam"})
 
 display(errors.head(20))
 
-errors.to_csv("results/tables/model_errors.csv", index=False)
+errors.to_csv(os.path.join(tables_dir, "model_errors.csv"), index=False)
 
 count_vectorizer = CountVectorizer(
     max_features=5000,
@@ -629,7 +638,7 @@ comparison_df = pd.DataFrame(comparison_results)
 
 display(comparison_df)
 
-comparison_df.to_csv("results/tables/vectorizer_comparison.csv", index=False)
+comparison_df.to_csv(os.path.join(tables_dir, "vectorizer_comparison.csv"), index=False)
 
 plot_df = comparison_df.sort_values(by="f1", ascending=True)
 
@@ -663,7 +672,7 @@ plt.ylabel("")
 plt.xlim(0, 1.05)
 plt.grid(axis="x", linestyle="--", alpha=0.35)
 plt.tight_layout()
-plt.savefig("results/plots/vectorizer_comparison.png", dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(plots_dir, "vectorizer_comparison.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
 def predict_sms(text):
@@ -682,7 +691,7 @@ def predict_sms(text):
 
     return "SPAM" if prediction == 1 else "HAM"
 
-custom_messages_path = "../data/custom_messages.txt"
+custom_messages_path = os.path.join(BASE_DIR, "data", "custom_messages.txt")
 
 with open(custom_messages_path, "r", encoding="utf-8") as file:
 
@@ -714,10 +723,10 @@ for sms in examples:
 
 prediction_df = pd.DataFrame(prediction_results)
 
-prediction_df.to_csv("results/tables/sample_predictions.csv", index=False)
+prediction_df.to_csv(os.path.join(tables_dir, "sample_predictions.csv"), index=False)
 
 display(prediction_df)
 
-joblib.dump(best_model, "../results/models/best_model_tuned_linear_svm.pkl")
+joblib.dump(best_model, os.path.join(models_dir, "best_model_tuned_linear_svm.pkl"))
 
 print("ukonczono")
